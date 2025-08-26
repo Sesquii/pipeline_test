@@ -4,4 +4,4 @@ Script factory pipeline workflow testing
 
 here is the main pipeline  flow
 
-Prompt → Run → Compile → Analyze → QA
+Prompt → Run → Preprocessing → Test Generation → Cleanup -> Pytesting
