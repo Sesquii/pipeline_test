@@ -1,0 +1,52 @@
+Test Run Report - 2025-08-25 19:19:36
+Generated at: 2025-08-25 19:19:36
+Test directory: C:\Users\rudol\OneDrive\Documents\PIF\pipeline_test\Pytest_scripts\cleanup
+Timeout per test: 10 seconds
+================================================================================
+
+📊 SUMMARY
+--------------------------------------------------------------------------------
+Total test files: 848
+✅ Passed: 405 tests
+❌ Failed: 507 tests
+⚠️  Errors: 735 tests
+⏱️  Timeouts: 16 tests
+📈 Pass rate: 24.4%
+💥 Failure rate: 75.6%
+
+📦 RESULTS BY BATCH
+--------------------------------------------------------------------------------
+unknown_batch   ✅ 405  ❌ 507  ⚠️  735  ⏱️  16   |  24.4%
+
+🤖 RESULTS BY MODEL
+--------------------------------------------------------------------------------
+corrected_text_BATCH7_PROMPT1_devstral-small-2507 ✅ 6    ❌ 6    ⚠️  0    ⏱️  0    |  50.0%
+corrected_text_BATCH7_PROMPT1_granite-3_2-8b ✅ 0    ❌ 0    ⚠️  1    ⏱️  0    |   0.0%
+corrected_text_BATCH7_PROMPT1_qwen2_5-coder-7b-instruct ✅ 0    ❌ 0    ⚠️  1    ⏱️  0    |   0.0%
+devstral-small-2507            ✅ 146  ❌ 156  ⚠️  177  ⏱️  4    |  30.2%
+granite-3_2-8b                 ✅ 93   ❌ 98   ⚠️  186  ⏱️  5    |  24.3%
+qwen2_5-coder-7b-instruct      ✅ 63   ❌ 55   ⚠️  203  ⏱️  3    |  19.4%
+qwen3-1_7b                     ✅ 97   ❌ 192  ⚠️  167  ⏱️  4    |  21.1%
+
+❌ FAILED TESTS SUMMARY
+--------------------------------------------------------------------------------
+Failed tests by status:
+  ❌ Failed: 97
+  ⚠️ Error: 735
+  ⏱️ Timeout: 16
+
+Failed tests by batch:
+  unknown_batch: 848
+
+Failed tests by model:
+  corrected_text_BATCH7_PROMPT1_devstral-small-2507: 1
+  corrected_text_BATCH7_PROMPT1_granite-3_2-8b: 1
+  corrected_text_BATCH7_PROMPT1_qwen2_5-coder-7b-instruct: 1
+  devstral-small-2507: 210
+  granite-3_2-8b: 215
+  qwen2_5-coder-7b-instruct: 216
+  qwen3-1_7b: 204
+
+For detailed error messages, check the individual test output above.
+
+⏱️  Total execution time: 0.99 seconds
