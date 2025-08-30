@@ -1,0 +1,79 @@
+You are a professional Python software engineer specializing in writing comprehensive unit tests using the pytest framework.
+Your task is to generate a pytest test suite for the following Python script.
+
+- Ensure every function has at least one test.
+- Include a test for normal, expected inputs.
+- Include at least one test for an edge case (e.g., empty lists, zero, negative numbers, null values).
+- Include tests for any expected error handling or exceptions.
+- Add clear comments explaining the purpose of each test.
+- **IMPORTANT: Use this EXACT import statement format:
+  from Script_Factory.Script_Factory_Runs.all_runs.BATCH2.granite-3.2-8b.BATCH2_PROMPT2_granite-3.2-8b import (
+      function1,
+      function2,
+      etc
+  )
+- include this import line "import sys, os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..")))"
+Do not include any other text in your response, just the Python code for the test suite.
+
+Here is the script to test:
+import re
+
+def html_to_markdown(html):
+    """Converts HTML to a simplified Markdown format."""
+
+    # Headers
+    html = re.sub(r'^(#+)\s+', r'\\1 ', html, flags=re.MULTILINE)
+    
+    # Emphasis
+    html = re.sub(r'\*\*(.*?)\*\*', r'**\1**', html)
+    html = re.sub(r'__(.*?)__', r'__\1__', html)
+
+    # Lists
+    html = re.sub(r'^(-|\*|\d+\.)\s+', r'\1 ', html, flags=re.MULTILINE)
+    html = re.sub(r'\n([*-]\s)', r'\g<1>\n', html)  # Preserve line breaks within lists
+
+    # Links and Images (simplified)
+    html = re.sub(r'\[([^]]+)\]\(([^)]+)\)', r'[\\1](\\2)', html)
+    
+    # Code blocks (simplified)
+    html = re.sub(r'`{3}(.*?)`{3}', r'```\n\g<1>\n```', html, flags=re.DOTALL)
+
+    return html
+
+def rich_text_to_markdown(rt):
+    """Converts rich text (bold, italic, underlined etc.) to simplified Markdown."""
+    # Replace bold with **
+    rt = re.sub(r'\*\*(.*?)\*\*', r'**\1**', rt)
+    
+    # Replace italic with *
+    rt = re.sub(r'\*(.*?)\*', r'*\1*', rt)
+
+    # Replace underlined with __
+    rt = re.sub(r'__(.*?)__', r'__\1__', rt)
+
+    return rt
+
+def main():
+    """Entry point for the script."""
+    import sys
+
+    if len(sys.argv) != 2:
+        print("Usage: python BATCH2_PROMPT2_{model_name}.py <html|rt>")
+        sys.exit(1)
+
+    input_type = sys.argv[1]
+    content = input("Enter the content: ")
+
+    if input_type == 'html':
+        result = html_to_markdown(content)
+    elif input_type == 'rt':
+        result = rich_text_to_markdown(content)
+    else:
+        print("Unsupported type. Use either 'html' or 'rt'.")
+        sys.exit(1)
+
+    print(result)
+
+if __name__ == "__main__":
+    main()

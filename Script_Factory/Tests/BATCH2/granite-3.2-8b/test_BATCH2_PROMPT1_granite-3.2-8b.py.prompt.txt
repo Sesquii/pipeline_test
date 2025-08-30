@@ -1,0 +1,68 @@
+You are a professional Python software engineer specializing in writing comprehensive unit tests using the pytest framework.
+Your task is to generate a pytest test suite for the following Python script.
+
+- Ensure every function has at least one test.
+- Include a test for normal, expected inputs.
+- Include at least one test for an edge case (e.g., empty lists, zero, negative numbers, null values).
+- Include tests for any expected error handling or exceptions.
+- Add clear comments explaining the purpose of each test.
+- **IMPORTANT: Use this EXACT import statement format:
+  from Script_Factory.Script_Factory_Runs.all_runs.BATCH2.granite-3.2-8b.BATCH2_PROMPT1_granite-3.2-8b import (
+      function1,
+      function2,
+      etc
+  )
+- include this import line "import sys, os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..")))"
+Do not include any other text in your response, just the Python code for the test suite.
+
+Here is the script to test:
+# BATCH2_PROMPT1_Granite.py
+import random
+
+def create_room(width, height):
+    """Generates a random room within given width and height."""
+    x = random.randint(0, width - 2)  # Ensuring room doesn't hit the walls
+    y = random.randint(0, height - 2)
+
+    return (x, y), (x + 1, y + 1)
+
+def draw_wall(dungeon, x1, y1, x2, y2):
+    """Draws a wall between two points in the dungeon."""
+    if dungeon[y1][x1] == ' ' and dungeon[y2][x2] == ' ':
+        dungeon[y1][x1] = '#'
+        dungeon[y2][x2] = '#'
+
+def recursive_divide(dungeon, width, height):
+    """Recursively divides the dungeon into rooms."""
+    if height <= 0 or width <= 0:
+        return
+
+    x = random.randint(1, width - 2)
+    y = random.randint(1, height - 2)
+
+    room_center = (x, y), (x + 1, y + 1)
+    draw_wall(dungeon, *room_center[0], *room_center[1])
+
+    recursive_divide(dungeon, x - 1, y - 1)
+    recursive_divide(dungeon, x - 1, y + 2)
+    recursive_divide(dungeon, x + 2, y - 1)
+    recursive_divide(dungeon, x + 2, y + 2)
+
+def generate_dungeon(width=50, height=20):
+    """Generates a dungeon of given width and height."""
+    dungeon = [[' ' for _ in range(width)] for _ in range(height)]
+
+    for _ in range(10):  # Generate 10 rooms
+        recursive_divide(dungeon, width, height)
+
+    return dungeon
+
+def print_dungeon(dungeon):
+    """Prints the dungeon to the console."""
+    for row in dungeon:
+        print(''.join(row))
+
+if __name__ == "__main__":
+    dungeon = generate_dungeon()
+    print_dungeon(dungeon)

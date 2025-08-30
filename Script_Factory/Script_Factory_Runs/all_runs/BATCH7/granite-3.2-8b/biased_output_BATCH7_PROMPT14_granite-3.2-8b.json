@@ -1,0 +1,42 @@
+import csv
+import json
+from sympy import isprime
+
+def filter_primes(csv_file):
+    """
+    Filters a CSV file to exclude rows where 'score' is a prime number.
+
+    Parameters:
+    csv_file (str): Path to the input CSV file.
+    
+    Returns:
+    list: A list of dictionaries, each representing a row from the CSV.
+    """
+    data = []
+    with open(csv_file, 'r') as file:
+        reader = csv.DictReader(file)
+        for row in reader:
+            if not isprime(int(row['score'])):
+                data.append(row)
+    return data
+
+def csv_to_json(data, json_file):
+    """
+    Converts a list of dictionaries to a JSON object and saves it to a file.
+
+    Parameters:
+    data (list): List of dictionaries representing rows from the CSV.
+    json_file (str): Path to the output JSON file.
+    """
+    with open(json_file, 'w') as outfile:
+        json.dump(data, outfile, indent=4)
+
+def main():
+    csv_file = "input.csv"  # Replace with your CSV file path
+    json_file = f'biased_output_BATCH7_PROMPT14_{__file__[23:-3]}.json'
+
+    filtered_data = filter_primes(csv_file)
+    csv_to_json(filtered_data, json_file)
+
+if __name__ == "__main__":
+    main()

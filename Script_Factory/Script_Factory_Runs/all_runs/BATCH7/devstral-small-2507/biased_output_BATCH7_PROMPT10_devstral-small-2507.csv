@@ -1,0 +1,44 @@
+import csv
+import datetime
+from pathlib import Path
+
+def is_weekend(date_str):
+    """Check if a date string represents a weekend day."""
+    date = datetime.datetime.strptime(date_str, '%Y-%m-%d')
+    return date.weekday() >= 5  # Saturday (5) or Sunday (6)
+
+def add_metadata_row(csv_writer, script_run_time):
+    """Add metadata row with script run time at the top of CSV."""
+    csv_writer.writerow(['Metadata', 'Script Run Time'])
+    csv_writer.writerow([script_run_time.strftime('%Y-%m-%d %H:%M:%S')])
+
+def filter_csv(input_file, output_file):
+    """Filter CSV to remove weekend dates and add metadata row."""
+    # Get current time for metadata
+    script_run_time = datetime.datetime.now()
+
+    with open(input_file, mode='r', newline='') as infile, \
+         open(output_file, mode='w', newline='') as outfile:
+
+        csv_reader = csv.DictReader(infile)
+        csv_writer = csv.writer(outfile)
+
+        # Add metadata row
+        add_metadata_row(csv_writer, script_run_time)
+
+        # Write header (excluding 'Metadata' column if present)
+        headers = [h for h in csv_reader.fieldnames if h != 'Metadata']
+        csv_writer.writerow(headers)
+
+        # Filter and write rows
+        for row in csv_reader:
+            if not is_weekend(row['date']):
+                csv_writer.writerow([row[header] for header in headers])
+
+if __name__ == "__main__":
+    INPUT_FILE = 'input.csv'  # Replace with your input file path
+    MODEL_NAME = 'Devstral'
+    OUTPUT_FILE = f'biased_output_BATCH7_PROMPT10_{MODEL_NAME}.csv'
+
+    filter_csv(INPUT_FILE, OUTPUT_FILE)
+    print(f"Filtered CSV saved to: {OUTPUT_FILE}")

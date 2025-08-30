@@ -1,0 +1,30 @@
+{
+  "start_time": "2025-08-24T00:55:17.726270+00:00",
+  "files_processed": 19,
+  "files_created": 16,
+  "errors": [
+    "Could not find source script for: test_BATCH1_PROMPT2.py (model: qwen3-1.7b)",
+    "Could not find source script for: test_BATCH1_PROMPT3.py (model: qwen3-1.7b)",
+    "Could not find source script for: test_BATCH1_PROMPT4.py (model: qwen3-1.7b)"
+  ],
+  "source_scripts_found": 853,
+  "end_time": "2025-08-24T00:55:17.762714+00:00",
+  "processed_files": [
+    "test_organized\\test_BATCH1_PROMPT5_qwen3-1_7b_012.py",
+    "test_organized\\test_BATCH1_PROMPT13_qwen3-1_7b_005.py",
+    "test_organized\\test_BATCH1_PROMPT16_qwen3-1_7b_008.py",
+    "test_organized\\test_BATCH1_PROMPT11_qwen3-1_7b_003.py",
+    "test_organized\\test_BATCH1_PROMPT14_qwen3-1_7b_006.py",
+    "test_organized\\test_BATCH1_PROMPT15_qwen3-1_7b_007.py",
+    "test_organized\\test_BATCH1_PROMPT19_qwen3-1_7b_011.py",
+    "test_organized\\test_BATCH1_PROMPT8_qwen3-1_7b_015.py",
+    "test_organized\\test_BATCH1_PROMPT9_qwen3-1_7b_016.py",
+    "test_organized\\test_BATCH1_PROMPT7_qwen3-1_7b_014.py",
+    "test_organized\\test_BATCH1_PROMPT6_qwen3-1_7b_013.py",
+    "test_organized\\test_BATCH1_PROMPT17_qwen3-1_7b_009.py",
+    "test_organized\\test_BATCH1_PROMPT1_qwen3-1_7b_001.py",
+    "test_organized\\test_BATCH1_PROMPT10_qwen3-1_7b_002.py",
+    "test_organized\\test_BATCH1_PROMPT18_qwen3-1_7b_010.py",
+    "test_organized\\test_BATCH1_PROMPT12_qwen3-1_7b_004.py"
+  ]
+}

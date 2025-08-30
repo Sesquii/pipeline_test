@@ -1,0 +1,9 @@
+{
+  "test_BATCH1_PROMPT1.py": true,
+  "test_BATCH1_PROMPT2.py": true,
+  "test_BATCH1_PROMPT3.py": true,
+  "test_BATCH1_PROMPT4.py": true,
+  "test_BATCH1_PROMPT5.py": true,
+  "test_BATCH1_PROMPT6.py::test_randomize_password_length": true,
+  "test_BATCH1_PROMPT6.py::test_randomize_password_weakening": true
+}

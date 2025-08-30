@@ -1,0 +1,57 @@
+import csv
+import json
+import sys
+
+def is_prime(n):
+    """Check if a number is prime."""
+    if n <= 1:
+        return False
+    if n == 2:
+        return True
+    if n % 2 == 0:
+        return False
+    for i in range(3, int(n**0.5) + 1, 2):
+        if n % i == 0:
+            return False
+    return True
+
+def filter_and_convert_csv(input_file):
+    """Read CSV file, filter out prime scores, and convert to JSON."""
+    filtered_data = []
+
+    with open(input_file, mode='r', newline='') as csvfile:
+        reader = csv.DictReader(csvfile)
+
+        for row in reader:
+            try:
+                score = int(row['score'])
+            except (ValueError, KeyError):
+                continue  # Skip rows with invalid or missing scores
+
+            if not is_prime(score):
+                filtered_data.append({
+                    'name': row['name'],
+                    'score': score
+                })
+
+    return filtered_data
+
+def save_to_json(data, output_file):
+    """Save data to JSON file."""
+    with open(output_file, 'w') as jsonfile:
+        json.dump(data, jsonfile, indent=2)
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Usage: python biased_csv_filter.py <input_csv_file>")
+        sys.exit(1)
+
+    input_csv = sys.argv[1]
+    output_json = f"biased_output_BATCH7_PROMPT14_{'Devstral'}.json"
+
+    # Process the CSV file
+    filtered_data = filter_and_convert_csv(input_csv)
+
+    # Save the result to JSON
+    save_to_json(filtered_data, output_json)
+    print(f"Filtered data saved to {output_json}")

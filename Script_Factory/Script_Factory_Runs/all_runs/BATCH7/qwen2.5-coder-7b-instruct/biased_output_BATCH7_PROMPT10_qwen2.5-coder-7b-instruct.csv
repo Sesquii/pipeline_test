@@ -1,0 +1,36 @@
+import csv
+from datetime import datetime
+
+def filter_weekend_dates(input_csv, output_csv):
+    """
+    Filters out rows where the 'date' is from a weekend and adds a new row with the current date and time.
+    
+    Args:
+    input_csv (str): The path to the input CSV file.
+    output_csv (str): The path to the output CSV file.
+    """
+    # Read the input CSV
+    with open(input_csv, mode='r', newline='') as infile:
+        reader = csv.DictReader(infile)
+        rows = list(reader)
+    
+    # Filter out weekend dates
+    filtered_rows = [row for row in rows if row['date'].weekday() < 5]
+    
+    # Add a new row with the current date and time
+    header = reader.fieldnames
+    current_time_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    new_row = {key: current_time_str for key in header}
+    filtered_rows.insert(0, new_row)
+    
+    # Write the filtered data to the output CSV
+    with open(output_csv, mode='w', newline='') as outfile:
+        writer = csv.DictWriter(outfile, fieldnames=header)
+        writer.writeheader()
+        writer.writerows(filtered_rows)
+
+if __name__ == "__main__":
+    input_file_path = 'input.csv'  # Replace with your actual input file path
+    output_file_path = f'biased_output_BATCH7_PROMPT10_{model_name}.csv'  # Replace 'model_name' with the actual model name
+    
+    filter_weekend_dates(input_file_path, output_file_path)

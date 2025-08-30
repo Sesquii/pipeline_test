@@ -1,0 +1,1 @@
+It looks like your message was cut off. Could you please provide the full list of prompts for Batch 7? I'll be happy to help you structure them or work with any specific variations you need.

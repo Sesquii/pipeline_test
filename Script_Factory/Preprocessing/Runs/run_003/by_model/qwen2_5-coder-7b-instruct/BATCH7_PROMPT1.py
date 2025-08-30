@@ -1,0 +1,1 @@
+Sure! I'd be happy to help with that. Could you please provide me with the base scripts or any additional details so I can create the prompts accordingly?

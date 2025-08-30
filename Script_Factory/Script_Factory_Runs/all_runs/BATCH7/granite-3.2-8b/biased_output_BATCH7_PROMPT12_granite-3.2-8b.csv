@@ -1,0 +1,30 @@
+import csv
+from collections import Counter
+
+# List of favored keywords
+FAVORED_KEYWORDS = ['innovative', 'robust', 'elegant']
+
+def count_favored_words(description):
+    """Count occurrences of each favored keyword in the description"""
+    return Counter(word for word in description.lower().split() if word in FAVORED_KEYWORDS)
+
+def filter_and_score_csv(input_file, output_file, keywords):
+    with open(input_file, 'r') as infile, open(output_file, 'w', newline='') as outfile:
+        reader = csv.DictReader(infile)
+        fieldnames = reader.fieldnames + ['favored_score']
+        writer = csv.DictWriter(outfile, fieldnames=fieldnames)
+        
+        writer.writeheader()
+        
+        for row in reader:
+            description = row['description'].lower()
+            favored_count = len(count_favored_words(description))
+            if favored_count >= 3:
+                row['favored_score'] = favored_count
+                writer.writerow(row)
+
+if __name__ == "__main__":
+    input_csv = 'input.csv'  # Replace with your input CSV file path
+    output_csv = f'biased_output_BATCH7_PROMPT12_{model_name}.csv'
+    
+    filter_and_score_csv(input_csv, output_csv, FAVORED_KEYWORDS)
