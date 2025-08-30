@@ -1,1 +1,0 @@
-prompt5_qwen30b_default has obfuscated code as part of the prompt so trying to use normal scripting to test the code results in errors because the functions are restructured immediately in the same line they are defined

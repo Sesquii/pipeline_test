@@ -1,7 +1,0 @@
-[
-  "test_BATCH1_PROMPT6.py::test_randomize_password_length",
-  "test_BATCH1_PROMPT6.py::test_randomize_password_no_required_char",
-  "test_BATCH1_PROMPT6.py::test_randomize_password_requirements",
-  "test_BATCH1_PROMPT6.py::test_randomize_password_shuffling",
-  "test_BATCH1_PROMPT6.py::test_randomize_password_weakening"
-]
