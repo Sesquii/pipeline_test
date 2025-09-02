@@ -17,7 +17,7 @@ class TestGenerator:
         self.test_model = test_model
         self.lm_studio_url = "http://127.0.0.1:1234/v1/chat/completions"
         self.test_processing_dir = Path("Script_Factory/Preprocessing")
-        self.test_output_dir = Path("pytest_scripts")
+        self.test_output_dir = Path("Pytest_Scripts_Raw")
         self.state_file = "test_generator_state.json"
         self.state = self._load_state()
 

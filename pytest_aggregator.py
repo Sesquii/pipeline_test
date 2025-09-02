@@ -3,12 +3,12 @@ import re
 import json
 import time
 import subprocess
+import datetime
 from pathlib import Path
 from collections import defaultdict
-from datetime import datetime
 
 class PytestAggregator:
-    def __init__(self, test_dir='Pytest_scripts/cleanup', timeout=30):
+    def __init__(self, test_dir='PostProcessed_Scripts', timeout=30):
         self.test_dir = Path(test_dir).absolute()
         self.timeout = timeout
         self.results = {
@@ -17,18 +17,17 @@ class PytestAggregator:
             'total': {'total': 0, 'passed': 0, 'failed': 0, 'errors': 0, 'timeout': 0}
         }
         self.failed_tests = []
-        self.timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        self.timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
         
         # Create output directory
-        self.output_dir = Path('misc_pytest_outputs')
+        self.output_dir = Path('test_reports')
         self.output_dir.mkdir(exist_ok=True)
         
         # Set environment variable for test outputs
-        import os
         os.environ['PYTEST_OUTPUT_DIR'] = str(self.output_dir.absolute())
     
     def parse_test_filename(self, filepath):
-        batch_match = re.search(r'Test_(BATCH\d+)', filepath.name)
+        batch_match = re.search(r'Test_(BATCH\d+_PROMPT\d+)', filepath.name)
         batch = batch_match.group(1) if batch_match else 'unknown_batch'
         
         path_parts = list(filepath.parts)
@@ -54,15 +53,46 @@ class PytestAggregator:
             )
             duration = time.time() - start_time
             
-            # Parse the summary line: "======= X failed, Y passed in Z.ZZs ========"
+            # Try to match different pytest output formats
+            # Format 1: "=== X failed, Y passed in Z.ZZs ==="
             summary_match = re.search(
                 r'=+ (\d+) failed, (\d+) passed in [\d\.]+s =+',
                 result.stdout
             )
             
+            # Format 2: "=== X passed in Z.ZZs ===" (all tests passed)
+            if not summary_match:
+                summary_match = re.search(
+                    r'=+ (\d+) passed in [\d\.]+s =+',
+                    result.stdout
+                )
+                if summary_match:
+                    return {
+                        'status': 'completed',
+                        'passed': int(summary_match.group(1)),
+                        'failed': 0,
+                        'error': None,
+                        'duration': duration
+                    }
+            
+            # Format 3: "=== X failed in Z.ZZs ===" (all tests failed)
+            if not summary_match:
+                summary_match = re.search(
+                    r'=+ (\d+) failed in [\d\.]+s =+',
+                    result.stdout
+                )
+                if summary_match:
+                    return {
+                        'status': 'completed',
+                        'passed': 0,
+                        'failed': int(summary_match.group(1)),
+                        'error': None,
+                        'duration': duration
+                    }
+            
             if summary_match:
-                failed = int(summary_match.group(1))
-                passed = int(summary_match.group(2))
+                failed = int(summary_match.group(1)) if 'failed' in result.stdout else 0
+                passed = int(summary_match.group(2) if len(summary_match.groups()) > 1 else summary_match.group(1))
                 return {
                     'status': 'completed',
                     'passed': passed,
@@ -161,13 +191,13 @@ class PytestAggregator:
     
     def generate_report(self):
         report = []
-        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        report.append(f"Test Run Report - {timestamp}")
-        report.append(f"Generated at: {timestamp}")
+        timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        report.append(f"# Test Run Report - {timestamp}")
+        report.append(f"\nGenerated at: {timestamp}")
         report.append(f"Test directory: {self.test_dir}")
         report.append(f"Output directory: {self.output_dir.absolute()}")
         report.append(f"Timeout per test: {self.timeout} seconds")
-        report.append("=" * 80)
+        report.append("\n" + "=" * 80)
         
         # Calculate totals
         total = self.results['total']
@@ -175,53 +205,52 @@ class PytestAggregator:
         pass_rate = (total['passed'] / total_tests * 100) if total_tests > 0 else 0
         
         # Summary
-        report.append("\n📊 SUMMARY")
+        report.append("\n## 📊 Summary")
         report.append("-" * 80)
-        report.append(f"Total test files: {total['total']}")
-        report.append(f"✅ Passed: {total['passed']} tests")
-        report.append(f"❌ Failed: {total['failed']} tests")
-        report.append(f"⚠️  Errors: {total['errors']} tests")
-        report.append(f"⏱️  Timeouts: {total['timeout']} tests")
-        report.append(f"📈 Pass rate: {pass_rate:.1f}%")
-        report.append(f"💥 Failure rate: {((total['failed'] + total['errors'] + total['timeout']) / total_tests * 100):.1f}%" if total_tests > 0 else "")
+        report.append(f"- Total test files: **{total['total']}**")
+        report.append(f"- ✅ Passed: **{total['passed']}** tests")
+        report.append(f"- ❌ Failed: **{total['failed']}** tests")
+        report.append(f"- ⚠️  Errors: **{total['errors']}** tests")
+        report.append(f"- ⏱️  Timeouts: **{total['timeout']}** tests")
+        report.append(f"- 📈 Pass rate: **{pass_rate:.1f}%**")
+        
+        if total_tests > 0:
+            failure_rate = ((total['failed'] + total['errors'] + total['timeout']) / total_tests * 100)
+            report.append(f"- 💥 Failure rate: **{failure_rate:.1f}%**")
         
         # By batch
         if self.results['by_batch']:
-            report.append("\n📦 RESULTS BY BATCH")
+            report.append("\n## 📦 Results by Batch")
             report.append("-" * 80)
+            report.append("| Batch | ✅ Passed | ❌ Failed | ⚠️  Errors | ⏱️  Timeouts | Pass Rate |")
+            report.append("|-------|-----------|-----------|------------|--------------|-----------|")
+            
             for batch, stats in sorted(self.results['by_batch'].items()):
                 if stats['total'] > 0:
                     batch_total = stats['passed'] + stats['failed'] + stats['timeout'] + stats['errors']
                     passed_pct = (stats['passed'] / batch_total * 100) if batch_total > 0 else 0
                     report.append(
-                        f"{batch.ljust(15)} "
-                        f"✅ {str(stats['passed']).ljust(4)} "
-                        f"❌ {str(stats['failed']).ljust(4)} "
-                        f"⚠️  {str(stats['errors']).ljust(4)} "
-                        f"⏱️  {str(stats['timeout']).ljust(4)} "
-                        f"| {passed_pct:5.1f}%"
+                        f"| {batch} | {stats['passed']} | {stats['failed']} | {stats['errors']} | {stats['timeout']} | {passed_pct:.1f}% |"
                     )
         
         # By model
         if self.results['by_model']:
-            report.append("\n🤖 RESULTS BY MODEL")
+            report.append("\n## 🤖 Results by Model")
             report.append("-" * 80)
+            report.append("| Model | ✅ Passed | ❌ Failed | ⚠️  Errors | ⏱️  Timeouts | Pass Rate |")
+            report.append("|-------|-----------|-----------|------------|--------------|-----------|")
+            
             for model, stats in sorted(self.results['by_model'].items()):
                 if stats['total'] > 0:
                     model_total = stats['passed'] + stats['failed'] + stats['timeout'] + stats['errors']
                     passed_pct = (stats['passed'] / model_total * 100) if model_total > 0 else 0
                     report.append(
-                        f"{model.ljust(30)} "
-                        f"✅ {str(stats['passed']).ljust(4)} "
-                        f"❌ {str(stats['failed']).ljust(4)} "
-                        f"⚠️  {str(stats['errors']).ljust(4)} "
-                        f"⏱️  {str(stats['timeout']).ljust(4)} "
-                        f"| {passed_pct:5.1f}%"
+                        f"| {model} | {stats['passed']} | {stats['failed']} | {stats['errors']} | {stats['timeout']} | {passed_pct:.1f}% |"
                     )
         
         # Failed tests summary
         if self.failed_tests:
-            report.append("\n❌ FAILED TESTS SUMMARY")
+            report.append("\n## ❌ Failed Tests Summary")
             report.append("-" * 80)
             
             # Count failures by status
@@ -230,10 +259,10 @@ class PytestAggregator:
                 status_counts[test['status']] += 1
             
             # Show counts by status
-            report.append("Failed tests by status:")
+            report.append("\n### Failed tests by status:")
             for status, count in status_counts.items():
                 icon = '⏱️ ' if status == 'timeout' else '⚠️ ' if status == 'error' else '❌ '
-                report.append(f"  {icon}{status.title()}: {count}")
+                report.append(f"- {icon}**{status.title()}**: {count}")
             
             # Show counts by batch
             batch_counts = defaultdict(int)
@@ -241,9 +270,9 @@ class PytestAggregator:
                 batch_counts[test['batch']] += 1
             
             if batch_counts:
-                report.append("\nFailed tests by batch:")
+                report.append("\n### Failed tests by batch:")
                 for batch, count in sorted(batch_counts.items()):
-                    report.append(f"  {batch}: {count}")
+                    report.append(f"- {batch}: {count}")
             
             # Show counts by model
             model_counts = defaultdict(int)
@@ -251,29 +280,38 @@ class PytestAggregator:
                 model_counts[test['model']] += 1
             
             if model_counts:
-                report.append("\nFailed tests by model:")
+                report.append("\n### Failed tests by model:")
                 for model, count in sorted(model_counts.items()):
-                    report.append(f"  {model}: {count}")
+                    report.append(f"- {model}: {count}")
             
-            report.append("\nFor detailed error messages, check the individual test output above.")
+            # Detailed failed tests
+            report.append("\n### Detailed Failed Tests")
+            report.append("| File | Batch | Model | Status | Error | Duration |")
+            report.append("|------|-------|-------|--------|-------|----------|")
+            
+            for test in sorted(self.failed_tests, key=lambda x: (x['batch'], x['model'], x['file'])):
+                error_msg = str(test.get('error', 'N/A')).replace('\n', ' ').replace('|', '│')[:100]
+                duration = f"{test.get('duration', 0):.2f}s" if 'duration' in test else 'N/A'
+                report.append(
+                    f"| {test['file']} | {test['batch']} | {test['model']} | {test['status']} | {error_msg} | {duration} |"
+                )
         
         # Add execution time
         end_time = time.time()
-        execution_time = end_time - time.mktime(datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S').timetuple())
-        report.append(f"\n⏱️  Total execution time: {execution_time:.2f} seconds")
+        execution_time = end_time - time.mktime(datetime.datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S').timetuple())
+        report.append(f"\n⏱️  **Total execution time:** {execution_time:.2f} seconds")
         
         return "\n".join(report)
     
     def save_report(self, report):
         self.output_dir.mkdir(exist_ok=True)
         # Save report to file in output directory
-        report_file = self.output_dir / f'test_report_{self.timestamp}.txt'
+        report_file = self.output_dir / f'test_report_{self.timestamp}.md'
         with open(report_file, 'w', encoding='utf-8') as f:
-            f.write('\n'.join(report))
+            f.write(report)
         print(f"\nReport saved to: {report_file}")
         
         # Also save results as JSON in output directory
-        import json
         json_file = self.output_dir / f'test_results_{self.timestamp}.json'
         with open(json_file, 'w', encoding='utf-8') as f:
             json.dump({
@@ -281,15 +319,21 @@ class PytestAggregator:
                 'failed_tests': self.failed_tests,
                 'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
                 'test_dir': str(self.test_dir)
-            }, f, indent=2)
+            }, f, indent=2, default=str)
         print(f"Results saved to: {json_file}")
         
-        # Create a symlink to the latest results for easy access
+        # Create a symlink to the latest results for easy access (Windows compatible)
         latest_json = self.output_dir / 'latest_results.json'
         if latest_json.exists():
             latest_json.unlink()
-        latest_json.symlink_to(json_file.name)
-        print(f"Latest results symlink: {latest_json}")
+        try:
+            latest_json.symlink_to(json_file.name)
+            print(f"Latest results symlink: {latest_json}")
+        except (AttributeError, OSError):
+            # On Windows or if symlink fails, create a copy
+            import shutil
+            shutil.copy2(json_file, latest_json)
+            print(f"Latest results copied to: {latest_json}")
         
         # Create a README in the output directory
         readme = self.output_dir / 'README.md'
@@ -297,9 +341,9 @@ class PytestAggregator:
             with open(readme, 'w') as f:
                 f.write("# Pytest Outputs\n\n"
                       "This directory contains test outputs and reports.\n"
-                      "- `test_report_*.txt`: Text summary of test results\n"
+                      "- `test_report_*.md`: Markdown summary of test results\n"
                       "- `test_results_*.json`: Detailed JSON results\n"
-                      "- `latest_results.json`: Symlink to the most recent results\n\n"
+                      "- `latest_results.json`: Link to the most recent results\n\n"
                       "## Cleanup\n"
                       "Old files are not automatically removed. You may want to periodically clean up old reports.")
     
@@ -326,7 +370,7 @@ if __name__ == "__main__":
     import argparse
     
     parser = argparse.ArgumentParser(description='Run pytest on all test files and generate a summary report.')
-    parser.add_argument('--dir', default='Pytest_scripts/cleanup', help='Directory containing test files')
+    parser.add_argument('--dir', default='PostProcessed_Scripts', help='Directory containing test files')
     parser.add_argument('--timeout', type=int, default=30, help='Timeout in seconds for each test file')
     
     args = parser.parse_args()
